@@ -7,24 +7,27 @@ Created on Wed May 16 11:36:00 2012
 """
 
 from numpy import arange, dtype, array, log10, tanh, ceil, \
-                  sqrt, cos, exp, pi, round, zeros, ones, reshape, power, rint, where, floor, append
+    sqrt, cos, exp, pi, round, zeros, ones, reshape, \
+    power, rint, where, int16
 from time import time
 from multiprocessing import Process, Queue
 
 # Filter warnings, when evaluating log10 of a NaN value
 import warnings
-warnings.filterwarnings(action = "ignore", category=RuntimeWarning)
+
+warnings.filterwarnings(action="ignore", category=RuntimeWarning)
 
 import datetime
 
-__author__    =  'Alexander Myasoedov'
-__email__    = 'mag@rshu.ru'
-__created__   =  datetime.datetime(2012, 5, 16)
+__author__ = 'Alexander Myasoedov'
+__email__ = 'mag@rshu.ru'
+__created__ = datetime.datetime(2012, 5, 16)
 __modified__ = datetime.datetime(2012, 5, 16)
-__version__   =  "1.0"
-__status__   = "Development"
+__version__ = "1.0"
+__status__ = "Development"
 
-def cmod4(u=10, windir=0, theta=arange(0,46)):
+
+def cmod4(u=10, windir=0, theta=arange(0, 46)):
     """
     Calculates Normalized Radar Cross Section using CMOD4 model.
     CMOD4 forward model - JHUAPL - Nathaniel Winstead - July 17, 2007.
@@ -62,37 +65,41 @@ def cmod4(u=10, windir=0, theta=arange(0,46)):
 
     # br-coefficients
     thetafac = array([
-                1.075,1.075,1.075,1.072,1.069,1.066,1.056,1.030,1.004,0.979,
-                0.967,0.958,0.949,0.941,0.934,0.927,0.923,0.930,0.937,0.944,
-                0.955,0.967,0.978,0.988,0.998,1.009,1.021,1.033,1.042,1.050,
-                1.054,1.053,1.052,1.047,1.038,1.028,1.016,1.002,0.989,0.965,
-                0.941,0.929,0.929,0.929,0.929], dtype='f8')
+                         1.075, 1.075, 1.075, 1.072, 1.069, 1.066, 1.056,
+                         1.030, 1.004, 0.979,
+                         0.967, 0.958, 0.949, 0.941, 0.934, 0.927, 0.923,
+                         0.930, 0.937, 0.944,
+                         0.955, 0.967, 0.978, 0.988, 0.998, 1.009, 1.021,
+                         1.033, 1.042, 1.050,
+                         1.054, 1.053, 1.052, 1.047, 1.038, 1.028, 1.016,
+                         1.002, 0.989, 0.965,
+                         0.941, 0.929, 0.929, 0.929, 0.929], dtype='f8')
 
     # convert theta to int before calculating br to use indexes
     if type(theta).__name__ == 'ndarray' or type(theta).__name__ == 'ndarray':
         if theta.dtype == dtype('f4') or theta.dtype == dtype('f8'):
-            x = (theta - 40)/25
+            x = (theta - 40) / 25
             theta = rint(theta)
-            theta = theta.astype(int)
-            br = thetafac[round(theta-16)+1]
+            theta = theta.astype(int16)
+            br = thetafac[round(theta - 16) + 1]
         elif theta.dtype == dtype('i4') or theta.dtype == dtype('i8'):
-            br = thetafac[round(theta-16)+1]
+            br = thetafac[round(theta - 16) + 1]
             theta = theta.astype(float)
-            x = (theta - 40)/25
+            x = (theta - 40) / 25
     else:
-        x = (theta - 40)/25
+        x = (theta - 40) / 25
         theta = rint(theta)
-        theta = theta.astype(int)
-        br = thetafac[round(theta-16)+1]
+        theta = theta.astype(int16)
+        br = thetafac[round(theta - 16) + 1]
 
     P0 = 1
     P1 = x
-    P2 = ((3*(power(x, 2)))-1)/2
+    P2 = ((3 * (power(x, 2))) - 1) / 2
 
-    F2x = tanh(2.5*(x+0.35))-(0.61*(x+0.35))
-    alfa = (c1*P0)+(c2*P1)+(c3*P2)
-    beta = (c7*P0)+(c8*P1)+(c9*P2)
-    gamma = (c4*P0)+(c5*P1)+(c6*P2)
+    F2x = tanh(2.5 * (x + 0.35)) - (0.61 * (x + 0.35))
+    alfa = (c1 * P0) + (c2 * P1) + (c3 * P2)
+    beta = (c7 * P0) + (c8 * P1) + (c9 * P2)
+    gamma = (c4 * P0) + (c5 * P1) + (c6 * P2)
 
     b1 = c10 * P0 + c11 * u + (c12 * P0 + c13 * u) * F2x
     b2 = (c14 * P0) + (c15 * (1 + P1) * u)
@@ -101,18 +108,20 @@ def cmod4(u=10, windir=0, theta=arange(0,46)):
     y = u + beta
 
     if y.all() <= 0:
-        F1x  =  0
+        F1x = 0
     elif y.all() <= 5:
-        F1x  =  log10(y)
+        F1x = log10(y)
     else:
-        F1x = sqrt(y)/3.2
+        F1x = sqrt(y) / 3.2
     b0 = br * 10 ** (alfa + (gamma * F1x))
-    sig = b0 * (1 + b1 * cos(windir * pi / 180) + b3 * tanh(b2) * cos(2 * windir * pi / 180)) ** 1.6
-#    sig0 = 10*log10(sig) # in dB
+    sig = b0 * (1 + b1 * cos(windir * pi / 180) + b3 * tanh(b2) * cos(
+        2 * windir * pi / 180)) ** 1.6
+    #    sig0 = 10*log10(sig) # in dB
 
     return sig
 
-def cmod5n(v,phi,theta):
+
+def cmod5n_forward(v, phi, theta):
     '''! ---------
     ! cmod5n_forward(v, phi, theta)
     ! inputs:
@@ -141,62 +150,63 @@ def cmod5n(v,phi,theta):
 
     # NB: 0 added as first element below, to avoid switching from 1-indexing to 0-indexing
     C = [0, -0.6878, -0.7957, 0.3380, -0.1728, 0.0000, 0.0040, 0.1103, 0.0159,
-          6.7329, 2.7713, -2.2885, 0.4971, -0.7250, 0.0450,
-          0.0066, 0.3222, 0.0120, 22.7000, 2.0813, 3.0000, 8.3659,
-          -3.3428, 1.3236, 6.2437, 2.3893, 0.3249, 4.1590, 1.6930]
+         6.7329, 2.7713, -2.2885, 0.4971, -0.7250, 0.0450,
+         0.0066, 0.3222, 0.0120, 22.7000, 2.0813, 3.0000, 8.3659,
+         -3.3428, 1.3236, 6.2437, 2.3893, 0.3249, 4.1590, 1.6930]
     Y0 = C[19]
     PN = C[20]
-    A = C[19]-(C[19]-1)/C[20]
+    A = C[19] - (C[19] - 1) / C[20]
 
-    B = 1./(C[20]*(C[19]-1.)**(3-1))
+    B = 1. / (C[20] * (C[19] - 1.) ** (3 - 1))
 
-# ! ANGLES
-    FI=phi/DTOR
+    # ! ANGLES
+    FI = phi / DTOR
     CSFI = cos(FI)
-    CS2FI= 2.00 * CSFI * CSFI - 1.00
+    CS2FI = 2.00 * CSFI * CSFI - 1.00
 
     X = (theta - THETM) / THETHR
-    XX = X*X
+    XX = X * X
 
     # ! B0: FUNCTION OF WIND SPEED AND INCIDENCE ANGLE
-    A0 =C[ 1]+C[ 2]*X+C[ 3]*XX+C[ 4]*X*XX
-    A1 =C[ 5]+C[ 6]*X
-    A2 =C[ 7]+C[ 8]*X
+    A0 = C[1] + C[2] * X + C[3] * XX + C[4] * X * XX
+    A1 = C[5] + C[6] * X
+    A2 = C[7] + C[8] * X
 
-    GAM=C[ 9]+C[10]*X+C[11]*XX
-    S0 =C[12]+C[13]*X
+    GAM = C[9] + C[10] * X + C[11] * XX
+    S0 = C[12] + C[13] * X
 
     # V is missing! Using V=v as substitute, this is apparently correct
-    V=v
-    S = A2*V
+    V = v
+    S = A2 * V
     S_vec = S.copy()
-    SlS0 = [S_vec<S0]
-    S_vec[SlS0]=S0[SlS0]
-    A3=1./(1.+exp(-S_vec))
-    SlS0 = (S<S0)
-    A3[SlS0]=A3[SlS0]*(S[SlS0]/S0[SlS0])**( S0[SlS0]*(1.- A3[SlS0]))
+    SlS0 = [S_vec < S0]
+    S_vec[SlS0] = S0[SlS0]
+    A3 = 1. / (1. + exp(-S_vec))
+    SlS0 = (S < S0)
+    A3[SlS0] = A3[SlS0] * (S[SlS0] / S0[SlS0]) ** ( S0[SlS0] * (1. - A3[SlS0]))
     #A3=A3*(S/S0)**( S0*(1.- A3))
-    B0=(A3**GAM)*10.**(A0+A1*V)
+    B0 = (A3 ** GAM) * 10. ** (A0 + A1 * V)
 
     # ! B1: FUNCTION OF WIND SPEED AND INCIDENCE ANGLE
-    B1 = C[15]*V*(0.5+X-tanh(4.*(X+C[16]+C[17]*V)))
-    B1 = C[14]*(1.+X)- B1
-    B1 = B1/(exp( 0.34*(V-C[18]) )+1.)
+    B1 = C[15] * V * (0.5 + X - tanh(4. * (X + C[16] + C[17] * V)))
+    B1 = C[14] * (1. + X) - B1
+    B1 = B1 / (exp(0.34 * (V - C[18])) + 1.)
 
     # ! B2: FUNCTION OF WIND SPEED AND INCIDENCE ANGLE
-    V0 = C[21] + C[22]*X + C[23]*XX
-    D1 = C[24] + C[25]*X + C[26]*XX
-    D2 = C[27] + C[28]*X
+    V0 = C[21] + C[22] * X + C[23] * XX
+    D1 = C[24] + C[25] * X + C[26] * XX
+    D2 = C[27] + C[28] * X
 
-    V2 = (V/V0+1.)
-    V2ltY0 = V2<Y0
-    V2[V2ltY0] = A+B*(V2[V2ltY0]-1.)**PN
-    B2 = (-D1+D2*V2)*exp(-V2)
+    V2 = (V / V0 + 1.)
+    V2ltY0 = V2 < Y0
+    V2[V2ltY0] = A + B * (V2[V2ltY0] - 1.) ** PN
+    B2 = (-D1 + D2 * V2) * exp(-V2)
 
     # ! CMOD5_N: COMBINE THE THREE FOURIER TERMS
-    CMOD5_N = B0*(1.0+B1*CSFI+B2*CS2FI)**ZPOW
-    
+    CMOD5_N = B0 * (1.0 + B1 * CSFI + B2 * CS2FI) ** ZPOW
+
     return CMOD5_N
+
 
 def cmod5n_inverse(sigma0_obs, phi, incidence, iterations=10):
     '''! ---------
@@ -218,17 +228,17 @@ def cmod5n_inverse(sigma0_obs, phi, incidence, iterations=10):
     '''
 
     # First guess wind speed
-    V = array([10.])*ones(sigma0_obs.shape);
-    step=10.
-    
+    V = array([10.]) * ones(sigma0_obs.shape);
+    step = 10.
+
     # Iterating until error is smaller than threshold
     for iterno in range(1, iterations):
         #print iterno
         sigma0_calc = cmod5n_forward(V, phi, incidence)
-        ind = sigma0_calc-sigma0_obs>0
+        ind = sigma0_calc - sigma0_obs > 0
         V = V + step
-        V[ind] = V[ind] - 2*step
-        step = step/2
+        V[ind] = V[ind] - 2 * step
+        step = step / 2
 
     #mdict={'s0obs':sigma0_obs,'s0calc':sigma0_calc}
     #from scipy.io import savemat
@@ -236,7 +246,8 @@ def cmod5n_inverse(sigma0_obs, phi, incidence, iterations=10):
 
     return V
 
-def interp1gsy(x,y,xi,method2use):
+
+def interp1gsy(x, y, xi):
     """
     George Young's bottom-up interpolation function.
     A replacement for Matlab's interp1 for non-monotonic data.
@@ -245,17 +256,20 @@ def interp1gsy(x,y,xi,method2use):
     #  See how many points there are
     npts = x.shape[0]
     #  Loop through list from start to finish looking for a bracket
-    yi = x.max(axis=0)
+    yi = y[x.argmax(axis=0)]
 
-    for ipt in range(1,npts):
-        goofbelow = xi-x[ipt-1]
-        goofabove = xi-x[ipt]
-        a = where(goofbelow*goofabove < 0)
-        yi[a] = (y[ipt] +(xi[a] - x[ipt][a]) *(y[ipt] - y[ipt-1])/(x[ipt][a]-x[ipt-1][a]))
+    for ipt in range(1, npts):
+        goofbelow = xi - x[ipt - 1]
+        goofabove = xi - x[ipt]
+        a = where(goofbelow * goofabove < 0)
+        yi[a] = (y[ipt] + (xi[a] - x[ipt][a]) * (y[ipt] - y[ipt - 1]) / (
+        x[ipt][a] - x[ipt - 1][a]))
 
     return yi
 
-def rcs2wind(sar=-0.3877*ones((1,1)), cmdv=4, windir=0*ones((1,1)), theta=20*ones((1,1))):
+
+def rcs2wind(sar=-0.3877 * ones((1, 1)), cmdv=4, windir=0 * ones((1, 1)),
+             theta=20 * ones((1, 1))):
     """
     Note that input sar is in dB.
     Theta and windir must be same size as inputed sar
@@ -266,46 +280,49 @@ def rcs2wind(sar=-0.3877*ones((1,1)), cmdv=4, windir=0*ones((1,1)), theta=20*one
     # Create a list of winds to be retrieved - linear interpolation of wind
     # speed given rcs will done between values spaced every m/s from 0 to
     # maxwind
-    ws = arange(0,maxwind,1.0)
-#    alpha = 0.6
+    ws = arange(0, maxwind, 1.0)
+    #    alpha = 0.6
     # Start timer
     print "Calculating CMOD..."
     currtime = time()
 
-    sig=zeros((ws.size, sar.shape[0], sar.shape[1]))
-    # Loop over all of the available pixels, calling CMOD once per pixel
+    sig = zeros((ws.size, sar.shape[0], sar.shape[1]))
+    # Loop over all of the available pixels, calling CMOD for each wind speed
     if cmdv == 4:
         for ind in range(ws.size):
-            sig[ind,:,:] = cmod4(u=ws[ind], windir=windir, theta=theta)
-        # Use linear interpolation to look up the right wind in the sima table.
+            sig[ind, :, :] = cmod4(u=ws[ind], windir=windir, theta=theta)
+            # Use linear interpolation to look up the right wind in the sima table.
         print "Sigma to Wind LUT..."
-        xi = 10**(sar/10)
-        w = interp1gsy(x=sig,y=ws,xi=xi,method2use='l')
+        xi = 10 ** (sar / 10)
+        w = interp1gsy(x=sig, y=ws, xi=xi)
     elif cmdv == 5:
         w = cmod5n_inverse(sigma0_obs, phi, incidence, iterations=10)
     else:
         print "Illegal CMOD version specified"
 
-    print 'CMOD elapsed time: %f', ( time() - currtime )
+    print 'CMOD elapsed time: %f' % (time() - currtime)
     return w
 
-def rcs2windPar(sar=-0.3877*ones((1,1)), \
-                cmdv=4, windir=0*ones((1,1)), theta=20*ones((1,1)), nprocs=4):
-    def worker(sar,cmdv,windir, theta, out_q=None):
+
+def rcs2windPar(sar=-0.3877 * ones((1, 1)), \
+                cmdv=4, windir=0 * ones((1, 1)), theta=20 * ones((1, 1)),
+                nprocs=4):
+    def worker(sar, cmdv, windir, theta, out_q=None):
         maxwind = 35.0
         # Create a list of winds to be retrieved - linear interpolation of wind
         # speed given rcs will done between values spaced every m/s from 0 to
         # maxwind
-        ws = arange(0,maxwind,1.0)
-        sig=zeros((ws.size, theta.size))
-        # Loop over all of the available pixels, calling CMOD once per pixel
+        ws = arange(0, maxwind, 1.0)
+        sig = zeros((ws.size, theta.size))
+        # Loop over all of the available pixels, calling CMOD for each
+        #  wind speed
         if cmdv == 4:
             for ind in range(ws.size):
-                sig[ind,:] = cmod4(u=ws[ind], windir=windir, theta=theta)
+                sig[ind, :] = cmod4(u=ws[ind], windir=windir, theta=theta)
         else:
             print "Illegal CMOD version specified"
-        xi = 10**(sar/10)
-        w = interp1gsy(x=sig,y=ws,xi=xi,method2use='l')
+        xi = 10 ** (sar / 10)
+        w = interp1gsy(x=sig, y=ws, xi=xi)
         out_q.put(w)
 
     # Start timer
@@ -323,23 +340,23 @@ def rcs2windPar(sar=-0.3877*ones((1,1)), \
     for i in range(nprocs):
         q = Queue()
         p = Process(
-                target=worker,
-                args=(sarR[chunksize * i:chunksize * (i + 1)], cmdv, \
-                      windirR[chunksize * i:chunksize * (i + 1)], \
-                      thetaR[chunksize * i:chunksize * (i + 1)], \
-                      q))
+            target=worker,
+            args=(sarR[chunksize * i:chunksize * (i + 1)], cmdv, \
+                  windirR[chunksize * i:chunksize * (i + 1)], \
+                  thetaR[chunksize * i:chunksize * (i + 1)], \
+                  q))
         procs.append(p)
         out_q.append(q)
         p.start()
-    # Collect all results into a single result dict.
+        # Collect all results into a single result dict.
     # We know how many dicts with results to expect.
     #resultS = zeros((ws.size, sar.shape[0], sar.shape[1]))
     resultW = zeros(sar.size)
-    i=0
+    i = 0
     for q in out_q:
-        resultW[ chunksize * i:chunksize * (i + 1)] = q.get()
-        i+=1
-    # Processes that raise an exception automatically get an exitcode of 1.
+        resultW[chunksize * i:chunksize * (i + 1)] = q.get()
+        i += 1
+        # Processes that raise an exception automatically get an exitcode of 1.
     procs[-1].terminate()
     # Wait for all worker processes to finish
     for p in procs:
@@ -348,9 +365,10 @@ def rcs2windPar(sar=-0.3877*ones((1,1)), \
     # w = zeros(sar.size)
     resultW = reshape(resultW, sar.shape)
 
-    print 'CMOD elapsed time: %f', ( time() - currtime )
+    print 'CMOD elapsed time: %f' % (time() - currtime)
     return resultW
 
 
 if __name__ == "__main__":
-    rcs2wind(sar=-0.3877*ones((1,1)), cmdv=4, windir=180*ones((1,1)), theta=20*ones((1,1)))
+    rcs2wind(sar=-0.3877 * ones((1, 1)), cmdv=4, windir=180 * ones((1, 1)),
+             theta=20 * ones((1, 1)))
