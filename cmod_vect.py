@@ -28,27 +28,30 @@ __status__ = "Development"
 
 
 def cmod4(u, windir, theta):
-    '''
-    ! ---------
-    ! cmod4(u, windir, theta)
-    !
-    ! inputs:
-    ! u in [m/s] wind velocity (always >= 0)
-    ! windir in [deg] angle between azimuth and wind direction
-    ! (= D - AZM)
-    ! theta in [deg] incidence angle
-    !
-    ! output:
-    ! sig Normalized Radar Cross Section in [linear units]
-    !
-    ! windir and theta must be Numpy arrays of equal sizes
-    !
-    ! This function calculates Normalized Radar Cross Section using CMOD4 model.
-    !CMOD4 forward model - JHUAPL - Nathaniel Winstead - July 17, 2007.
-    !Stoffelen&Anderson (1997) Scatterometer Data Interpretation:
-    !Measurement Space and Inversion.
-    !---------------------------------------------------------------------
-    '''
+    """
+    Returns Normalized Radar Cross Section in linear units.
+
+    This function calculates Normalized Radar Cross Section using CMOD4 model.
+    CMOD4 forward model - JHUAPL - Nathaniel Winstead - July 17, 2007.
+    Stoffelen&Anderson (1997) Scatterometer Data Interpretation:
+    Measurement Space and Inversion.
+
+    Parameters
+    ----------
+    u : float
+       wind velocity in m/s
+
+    windir : numpy array
+        Angle between azimuth and wind direction in degrees.
+
+    theta: numpy array
+        Incidence angle in degrees.
+
+     Returns
+    -------
+    sig : numpy array
+         Normalized Radar Cross Section in linear units.
+    """
     # c-coefficients
     c1 = -2.301523
     c2 = -1.632686
@@ -128,26 +131,36 @@ def cmod4(u, windir, theta):
 
 
 def cmod5n_forward(v, phi, theta):
-    '''! ---------
-    ! cmod5n_forward(v, phi, theta)
-    ! inputs:
-    ! v in [m/s] wind velocity (always >= 0)
-    ! phi in [deg] angle between azimuth and wind direction
-    ! (= D - AZM)
-    ! theta in [deg] incidence angle
-    ! output:
-    ! CMOD5_N NORMALIZED BACKSCATTER (LINEAR)
-    !
-    ! All inputs must be Numpy arrays of equal sizes
-    !
-    ! A. STOFFELEN MAY 1991 ECMWF CMOD4
-    ! A. STOFFELEN, S. DE HAAN DEC 2001 KNMI CMOD5 PROTOTYPE
-    ! H. HERSBACH JUNE 2002 ECMWF COMPLETE REVISION
-    ! J. de Kloe JULI 2003 KNMI, rewritten in fortan90
-    ! A. Verhoef JAN 2008 KNMI, CMOD5 for neutral winds
-    ! K.F.Dagestad OCT 2011 NERSC, Vectorized Python version
-    !---------------------------------------------------------------------
-    '''
+    """
+    Returns wind speed at 10 m, neutral stratification.
+
+    This function calculates Normalized Radar Cross Section using CMOD5N model.
+
+    Parameters
+    ----------
+    v : numpy array
+        Wind velocity in m/s, (always >= 0).
+
+    phi : numpy array
+        Angle between azimuth and wind direction in degrees.
+
+    theta: numpy array
+        Incidence angle in degrees.
+
+     Returns
+    -------
+    w : numpy array
+         Wind speed, 10 m, neutral stratification in m/s.
+
+    All inputs must be Numpy arrays of equal sizes.
+
+     A. STOFFELEN MAY 1991 ECMWF CMOD4
+     A. STOFFELEN, S. DE HAAN DEC 2001 KNMI CMOD5 PROTOTYPE
+     H. HERSBACH JUNE 2002 ECMWF COMPLETE REVISION
+     J. de Kloe JULI 2003 KNMI, rewritten in fortan90
+     A. Verhoef JAN 2008 KNMI, CMOD5 for neutral winds
+     K.F.Dagestad OCT 2011 NERSC, Vectorized Python version
+    """
 
     DTOR = 57.29577951
     THETM = 40.
@@ -215,23 +228,33 @@ def cmod5n_forward(v, phi, theta):
 
 
 def cmod5n_inverse(sigma0_obs, phi, incidence, iterations=10):
-    '''! ---------
-    ! cmod5n_inverse(sigma0_obs, phi, incidence, iterations)
-    ! inputs:
-    ! sigma0_obs Normalized Radar Cross Section [linear units]
-    ! phi in [deg] angle between azimuth and wind direction
-    ! (= D - AZM)
-    ! incidence in [deg] incidence angle
-    ! iterations: number of iterations to run
-    ! output:
-    ! Wind speed, 10 m, neutral stratification
-    !
-    ! All inputs must be Numpy arrays of equal sizes
-    !
-    ! This function iterates the forward CMOD5N function
-    ! until agreement with input (observed) sigma0 values
-    !---------------------------------------------------------------------
-    '''
+    """
+    Returns wind speed at 10 m, neutral stratification.
+
+    This function iterates the forward CMOD5N function
+    until agreement with input (observed) sigma0 values
+
+    Parameters
+    ----------
+    sigma0_obs : numpy array
+        Normalized Radar Cross Section in linear units.
+
+    phi : numpy array
+        Angle between azimuth and wind direction in degrees.
+
+    incidence: numpy array
+        Incidence angle in degrees.
+
+    iterations: integer
+        Number of iterations to run.
+
+     Returns
+    -------
+    w : numpy array
+         Wind speed, 10 m, neutral stratification in m/s.
+
+    All inputs must be Numpy arrays of equal sizes
+    """
 
     # First guess wind speed
     V = array([10.]) * ones(sigma0_obs.shape);
@@ -256,9 +279,26 @@ def cmod5n_inverse(sigma0_obs, phi, incidence, iterations=10):
 def interp1gsy(x, y, xi):
     """
     George Young's bottom-up interpolation function.
-    A replacement for Matlab's interp1 for non-monotonic data.
+
+    Returns the one-dimensional piecewise linear interpolant to a function
+    with given values at discrete data-points.
+
+    Parameters
+    ----------
+    x : 1-D sequence of floats
+        The x-coordinates of the data points, must be increasing.
+
+    y : 1-D sequence of floats
+        The y-coordinates of the data points, same length as `xp`.
+
+    xi : array_like
+        The x-coordinates of the interpolated values.
+
+     Returns
+    -------
+    yi : {float, ndarray}
+        The interpolated values, same shape as `xi.
     """
-    #  method2use is "n" for nearest neighbor, "l" for linear regression
     #  See how many points there are
     npts = x.shape[0]
     #  Loop through list from start to finish looking for a bracket
@@ -268,33 +308,38 @@ def interp1gsy(x, y, xi):
         goofbelow = xi - x[ipt - 1]
         goofabove = xi - x[ipt]
         a = where(goofbelow * goofabove < 0)
-        yi[a] = (y[ipt] + (xi[a] - x[ipt][a]) * (y[ipt] - y[ipt - 1]) / (
-        x[ipt][a] - x[ipt - 1][a]))
+        yi[a] = (y[ipt] + (xi[a] - x[ipt][a]) * (y[ipt] - y[ipt - 1]) /
+                 (x[ipt][a] - x[ipt - 1][a]))
 
     return yi
 
 
 def rcs2wind(sar=0.9146 * ones((1, 1)), cmdv=4, windir=0 * ones((1, 1)),
              theta=20 * ones((1, 1))):
-    '''
-    ! ---------
-    ! rcs2wind(sar=0.9146 * ones((1, 1)), cmdv=4, windir=0 * ones((1, 1)),
-                 theta=20 * ones((1, 1)))
-    ! inputs:
-    ! sar Normalized Radar Cross Section [linear units]
-    ! cmdv - cmod version, 4 or 5
-    ! windir in [deg] angle between azimuth and wind direction
-    ! (= D - AZM)
-    ! theta in [deg] incidence angle
-    !
-    ! output:
-    ! Wind speed, 10 m, neutral stratification
-    !
-    ! Theta and windir must be same size as inputed sar
-    !
-    ! This function calculates wind speed at 10 m, using CMOD4 or CMOD5 model.
-    !---------------------------------------------------------------------
-    '''
+    """
+    Returns wind speed at 10 m, neutral stratification.
+
+    This function calculates wind speed at 10 m, using CMOD4 or CMOD5 model.
+
+    Parameters
+    ----------
+    sar : numpy array
+        Normalized Radar Cross Section in linear units
+
+    cmdv : integer
+        cmod version, 4 or 5.
+
+    windir : numpy array
+        Angle between azimuth and wind direction in degrees.
+
+    theta: numpy array
+        Incidence angle in degrees.
+
+     Returns
+    -------
+    w : numpy array
+         Wind speed, 10 m, neutral stratification in m/s.
+    """
 
     # Set the maximum wind to be retrieved
     maxwind = 35.0
@@ -312,7 +357,7 @@ def rcs2wind(sar=0.9146 * ones((1, 1)), cmdv=4, windir=0 * ones((1, 1)),
     if cmdv == 4:
         for ind in range(ws.size):
             sig[ind, :, :] = cmod4(u=ws[ind], windir=windir, theta=theta)
-            # Use linear interpolation to look up the right wind in the sima table.
+        # Use linear interpolation to look up the right wind in the sima table.
         print "Sigma to Wind LUT..."
         w = interp1gsy(x=sig, y=ws, xi=sar)
     elif cmdv == 5:
@@ -327,27 +372,35 @@ def rcs2wind(sar=0.9146 * ones((1, 1)), cmdv=4, windir=0 * ones((1, 1)),
 def rcs2windPar(sar=0.9146 * ones((1, 1)), \
                 cmdv=4, windir=0 * ones((1, 1)), theta=20 * ones((1, 1)),
                 nprocs=4):
-    '''
-    ! ---------
-    ! rcs2windPar(sar=0.9146 * ones((1, 1)), cmdv=4, windir=0 * ones((1, 1)),
-                 theta=20 * ones((1, 1)), nprocs=4)
-    ! inputs:
-    ! sar Normalized Radar Cross Section [linear units]
-    ! cmdv - cmod version, 4 or 5
-    ! windir in [deg] angle between azimuth and wind direction
-    ! (= D - AZM)
-    ! theta in [deg] incidence angle
-    ! nprocs - number of processes
-    !
-    ! output:
-    ! Wind speed, 10 m, neutral stratification
-    !
-    ! Theta and windir must be same size as inputed sar
-    !
-    ! This function calculates  in parallel wind speed at 10 m, using CMOD4
-    ! or CMOD5 model.
-    !---------------------------------------------------------------------
-    '''
+    """
+    Returns wind speed at 10 m, neutral stratification.
+
+    This function calculates in parallel wind speed at 10 m,
+    using CMOD4 or CMOD5 model.
+
+    Parameters
+    ----------
+    sar : numpy array
+        Normalized Radar Cross Section in linear units
+
+    cmdv : integer
+        cmod version, 4 or 5.
+
+    windir : numpy array
+        Angle between azimuth and wind direction in degrees.
+
+    theta: numpy array
+        Incidence angle in degrees.
+
+    nprocs: integer
+        number of processes
+
+     Returns
+    -------
+    w : numpy array
+         Wind speed, 10 m, neutral stratification in m/s.
+    """
+
     def worker(sar, cmdv, windir, theta, out_q=None):
         maxwind = 35.0
         # Create a list of winds to be retrieved - linear interpolation of wind
