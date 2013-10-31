@@ -27,22 +27,28 @@ __version__ = "1.0"
 __status__ = "Development"
 
 
-def cmod4(u=10, windir=0, theta=arange(0, 46)):
-    """
-    Calculates Normalized Radar Cross Section using CMOD4 model.
-    CMOD4 forward model - JHUAPL - Nathaniel Winstead - July 17, 2007.
-    Stoffelen&Anderson (1997) Scatterometer Data Interpretation:
-    Measurement Space and Inversion.
-
-    INPUT:
-    u           - Wind speed (m/s) at 10m height (?)
-    windir      - Angle between wind vector and radar look vector (degrees)
-                  NB! windir = 0 when wind blows toward radar!
-    theta       - Radar incidence angle (degrees)
-
-    OUTPUT:
-    cmod4    - NRCS (dB)
-    """
+def cmod4(u, windir, theta):
+    '''
+    ! ---------
+    ! cmod4(u, windir, theta)
+    !
+    ! inputs:
+    ! u in [m/s] wind velocity (always >= 0)
+    ! windir in [deg] angle between azimuth and wind direction
+    ! (= D - AZM)
+    ! theta in [deg] incidence angle
+    !
+    ! output:
+    ! sig Normalized Radar Cross Section in [linear units]
+    !
+    ! windir and theta must be Numpy arrays of equal sizes
+    !
+    ! This function calculates Normalized Radar Cross Section using CMOD4 model.
+    !CMOD4 forward model - JHUAPL - Nathaniel Winstead - July 17, 2007.
+    !Stoffelen&Anderson (1997) Scatterometer Data Interpretation:
+    !Measurement Space and Inversion.
+    !---------------------------------------------------------------------
+    '''
     # c-coefficients
     c1 = -2.301523
     c2 = -1.632686
@@ -268,13 +274,28 @@ def interp1gsy(x, y, xi):
     return yi
 
 
-def rcs2wind(sar=-0.3877 * ones((1, 1)), cmdv=4, windir=0 * ones((1, 1)),
+def rcs2wind(sar=0.9146 * ones((1, 1)), cmdv=4, windir=0 * ones((1, 1)),
              theta=20 * ones((1, 1))):
-    """
-    Note that input sar is in dB.
-    Theta and windir must be same size as inputed sar
-    Check that with sar=-0.387 wind speed is 10m/s
-    """
+    '''
+    ! ---------
+    ! rcs2wind(sar=0.9146 * ones((1, 1)), cmdv=4, windir=0 * ones((1, 1)),
+                 theta=20 * ones((1, 1)))
+    ! inputs:
+    ! sar Normalized Radar Cross Section [linear units]
+    ! cmdv - cmod version, 4 or 5
+    ! windir in [deg] angle between azimuth and wind direction
+    ! (= D - AZM)
+    ! theta in [deg] incidence angle
+    !
+    ! output:
+    ! Wind speed, 10 m, neutral stratification
+    !
+    ! Theta and windir must be same size as inputed sar
+    !
+    ! This function calculates wind speed at 10 m, using CMOD4 or CMOD5 model.
+    !---------------------------------------------------------------------
+    '''
+
     # Set the maximum wind to be retrieved
     maxwind = 35.0
     # Create a list of winds to be retrieved - linear interpolation of wind
@@ -293,10 +314,9 @@ def rcs2wind(sar=-0.3877 * ones((1, 1)), cmdv=4, windir=0 * ones((1, 1)),
             sig[ind, :, :] = cmod4(u=ws[ind], windir=windir, theta=theta)
             # Use linear interpolation to look up the right wind in the sima table.
         print "Sigma to Wind LUT..."
-        xi = 10 ** (sar / 10)
-        w = interp1gsy(x=sig, y=ws, xi=xi)
+        w = interp1gsy(x=sig, y=ws, xi=sar)
     elif cmdv == 5:
-        w = cmod5n_inverse(sigma0_obs, phi, incidence, iterations=10)
+        w = cmod5n_inverse(sar, windir, theta, iterations=10)
     else:
         print "Illegal CMOD version specified"
 
@@ -304,9 +324,30 @@ def rcs2wind(sar=-0.3877 * ones((1, 1)), cmdv=4, windir=0 * ones((1, 1)),
     return w
 
 
-def rcs2windPar(sar=-0.3877 * ones((1, 1)), \
+def rcs2windPar(sar=0.9146 * ones((1, 1)), \
                 cmdv=4, windir=0 * ones((1, 1)), theta=20 * ones((1, 1)),
                 nprocs=4):
+    '''
+    ! ---------
+    ! rcs2windPar(sar=0.9146 * ones((1, 1)), cmdv=4, windir=0 * ones((1, 1)),
+                 theta=20 * ones((1, 1)), nprocs=4)
+    ! inputs:
+    ! sar Normalized Radar Cross Section [linear units]
+    ! cmdv - cmod version, 4 or 5
+    ! windir in [deg] angle between azimuth and wind direction
+    ! (= D - AZM)
+    ! theta in [deg] incidence angle
+    ! nprocs - number of processes
+    !
+    ! output:
+    ! Wind speed, 10 m, neutral stratification
+    !
+    ! Theta and windir must be same size as inputed sar
+    !
+    ! This function calculates  in parallel wind speed at 10 m, using CMOD4
+    ! or CMOD5 model.
+    !---------------------------------------------------------------------
+    '''
     def worker(sar, cmdv, windir, theta, out_q=None):
         maxwind = 35.0
         # Create a list of winds to be retrieved - linear interpolation of wind
@@ -319,10 +360,11 @@ def rcs2windPar(sar=-0.3877 * ones((1, 1)), \
         if cmdv == 4:
             for ind in range(ws.size):
                 sig[ind, :] = cmod4(u=ws[ind], windir=windir, theta=theta)
+            w = interp1gsy(x=sig, y=ws, xi=sar)
+        elif cmdv == 5:
+            w = cmod5n_inverse(sar, windir, theta, iterations=10)
         else:
             print "Illegal CMOD version specified"
-        xi = 10 ** (sar / 10)
-        w = interp1gsy(x=sig, y=ws, xi=xi)
         out_q.put(w)
 
     # Start timer
@@ -370,5 +412,11 @@ def rcs2windPar(sar=-0.3877 * ones((1, 1)), \
 
 
 if __name__ == "__main__":
-    rcs2wind(sar=-0.3877 * ones((1, 1)), cmdv=4, windir=180 * ones((1, 1)),
-             theta=20 * ones((1, 1)))
+    wind = rcs2wind(sar=0.9146 * ones((1, 1)), cmdv=4,
+                    windir=0 * ones((1, 1)),
+                    theta=20 * ones((1, 1)))
+    print "Testing CMOD4 passed, Wind = %f" % wind
+    wind = rcs2wind(sar=0.9146 * ones((1, 1)), cmdv=5,
+                    windir=0 * ones((1, 1)),
+                    theta=20 * ones((1, 1)))
+    print "Testing CMOD5 passed, Wind = %f" % wind
