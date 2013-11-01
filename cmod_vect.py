@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-Created on Wed May 16 11:36:00 2012
-
-@author: mag
-"""
 
 from numpy import arange, dtype, array, log10, tanh, ceil, \
     sqrt, cos, exp, pi, round, zeros, ones, reshape, \
@@ -19,11 +14,11 @@ warnings.filterwarnings(action="ignore", category=RuntimeWarning)
 
 import datetime
 
-__author__ = 'Alexander Myasoedov'
+__author__ = 'Alexander Myasoedov (magican), Anna Monzikova (Monzik)'
 __email__ = 'mag@rshu.ru'
 __created__ = datetime.datetime(2012, 5, 16)
-__modified__ = datetime.datetime(2012, 5, 16)
-__version__ = "1.0"
+__modified__ = datetime.datetime(2013, 10, 31)
+__version__ = "2.0"
 __status__ = "Development"
 
 
