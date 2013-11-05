@@ -3,7 +3,7 @@
 
 from numpy import arange, dtype, array, log10, tanh, ceil, \
     sqrt, cos, exp, pi, round, zeros, ones, reshape, \
-    power, rint, where, int16
+    power, rint, where, int16, isnan, isinf, logical_and, logical_or
 from time import time
 from multiprocessing import Process, Queue
 
@@ -252,17 +252,22 @@ def cmod5n_inverse(sigma0_obs, phi, incidence, iterations=10):
     """
 
     # First guess wind speed
-    V = array([10.]) * ones(sigma0_obs.shape);
+    V = array([10.]) * ones(sigma0_obs.shape)
     step = 10.
 
     # Iterating until error is smaller than threshold
     for iterno in range(1, iterations):
-        #print iterno
         sigma0_calc = cmod5n_forward(V, phi, incidence)
-        ind = sigma0_calc - sigma0_obs > 0
-        V = V + step
+        ind = logical_and(sigma0_calc - sigma0_obs > 0,
+                          logical_and(~isinf(sigma0_calc),
+                                      ~isnan(sigma0_calc)))
+        V += step
+        ind_eq = logical_or(sigma0_calc - sigma0_obs == 0,
+                            logical_or(isinf(sigma0_calc),
+                                       isnan(sigma0_calc)))
+        V[ind_eq] = V[ind_eq] - step
         V[ind] = V[ind] - 2 * step
-        step = step / 2
+        step /= 2
 
     #mdict={'s0obs':sigma0_obs,'s0calc':sigma0_calc}
     #from scipy.io import savemat
@@ -364,8 +369,9 @@ def rcs2wind(sar=0.9146 * ones((1, 1)), cmdv=4, windir=0 * ones((1, 1)),
     return w
 
 
-def rcs2windPar(sar=0.9146 * ones((1, 1)), \
-                cmdv=4, windir=0 * ones((1, 1)), theta=20 * ones((1, 1)),
+def rcs2windPar(sar=0.9146 * ones((1, 1)),
+                cmdv=4, windir=0 * ones((1, 1)),
+                theta=20 * ones((1, 1)),
                 nprocs=4):
     """
     Returns wind speed at 10 m, neutral stratification.
@@ -431,9 +437,9 @@ def rcs2windPar(sar=0.9146 * ones((1, 1)), \
         q = Queue()
         p = Process(
             target=worker,
-            args=(sarR[chunksize * i:chunksize * (i + 1)], cmdv, \
-                  windirR[chunksize * i:chunksize * (i + 1)], \
-                  thetaR[chunksize * i:chunksize * (i + 1)], \
+            args=(sarR[chunksize * i:chunksize * (i + 1)], cmdv,
+                  windirR[chunksize * i:chunksize * (i + 1)],
+                  thetaR[chunksize * i:chunksize * (i + 1)],
                   q))
         procs.append(p)
         out_q.append(q)
@@ -463,8 +469,12 @@ if __name__ == "__main__":
     wind = rcs2wind(sar=0.9146 * ones((1, 1)), cmdv=4,
                     windir=0 * ones((1, 1)),
                     theta=20 * ones((1, 1)))
-    print "Testing CMOD4 passed, Wind = %f" % wind
+    print "Testing CMOD4 passed, Wind = %f" % wind.mean()
     wind = rcs2wind(sar=0.9146 * ones((1, 1)), cmdv=5,
                     windir=0 * ones((1, 1)),
                     theta=20 * ones((1, 1)))
+<<<<<<< HEAD
     print "Testing CMOD5 passed, Wind = %f" % wind
+=======
+    print "Testing CMOD5 passed, Wind = %f" % wind.mean()
+>>>>>>> fixed cmod5n_inverse function
