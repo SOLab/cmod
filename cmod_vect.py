@@ -473,8 +473,5 @@ if __name__ == "__main__":
     wind = rcs2wind(sar=0.9146 * ones((1, 1)), cmdv=5,
                     windir=0 * ones((1, 1)),
                     theta=20 * ones((1, 1)))
-<<<<<<< HEAD
-    print "Testing CMOD5 passed, Wind = %f" % wind
-=======
     print "Testing CMOD5 passed, Wind = %f" % wind.mean()
->>>>>>> fixed cmod5n_inverse function
+
