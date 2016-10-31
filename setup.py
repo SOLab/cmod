@@ -6,6 +6,7 @@ setup(
     name="cmod",
     version="0.1",
     packages=find_packages('cmod'),
+    package_dir={'': 'cmod'},
     include_package_data=True,
     # scripts=['cmod.py', 'cmod_gpu.py', 'cmod_vect.py'],
 
