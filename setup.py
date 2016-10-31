@@ -10,7 +10,7 @@ setup(
     package_dir={'': 'cmod'},
     include_package_data=True,
     zip_safe=False,
-    # scripts=['cmod.py', 'cmod_gpu.py', 'cmod_vect.py'],
+    scripts=['cmod.py', 'cmod_gpu.py', 'cmod_vect.py'],
 
     # metadata for upload to PyPI
     author="Alexander Myasoedov",
