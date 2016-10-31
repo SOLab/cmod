@@ -8,6 +8,8 @@ from pyopencl import array
 
 from time import time
 
+import datetime
+
 __author__ = 'Anna Monzikova (Monzik), Alexander Myasoedov (magican)'
 __email__ = 'monzik@rshu.ru, mag@rshu.ru'
 __created__ = datetime.datetime(2014, 5, 13)
@@ -170,8 +172,8 @@ def rcs2windOpenCl(sar, windir, theta):
     ## Step #11. Move the kernel’s output data to host memory.
     cl.enqueue_copy(queue, v_result, v_result_buf)
     end = time()
-    print "Execution time of CMOD5 with PyOpenCl: %g s" % (end-start)  
-    print "Mean wind speed: %s m/s" % (v_result.mean())
+    # print "Execution time of CMOD5 with PyOpenCl: %g s" % (end-start)  
+    # print "Mean wind speed: %s m/s" % (v_result.mean())
     ## Step #12. Release context, program, kernels and memory.
      
     return v_result
@@ -181,5 +183,5 @@ if __name__ == "__main__":
     wind = rcs2windOpenCL(sar=0.9146 * ones((1, 1)),
                     windir=0 * ones((1, 1)),
                     theta=20 * ones((1, 1)))
-    print "Testing CMOD5 passed, Wind = %f" % wind.mean()
+    # print "Testing CMOD5 passed, Wind = %f" % wind.mean()
     

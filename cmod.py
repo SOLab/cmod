@@ -162,7 +162,7 @@ def rcs2wind(sar=-0.3877*ones((1,1)), cmdv=4, windir=0*ones((1,1)), theta=20*one
     ws = arange(0,maxwind,1.0)
 #    alpha = 0.6
     # Start timer
-    print "Calculating CMOD..."
+    # print "Calculating CMOD..."
     currtime = time()
     # reshape sar, windir and theta to vector line
     sarR = reshape(sar, sar.size)
@@ -181,7 +181,7 @@ def rcs2wind(sar=-0.3877*ones((1,1)), cmdv=4, windir=0*ones((1,1)), theta=20*one
 
     # Use linear interpolation to look up the right wind in the sima table.
     # Start timer
-    print "Sigma to Wind LUT..."
+    # print "Sigma to Wind LUT..."
     w = zeros(sar.size)
     for i in range(sar.size):
         temp = sig[i,:]
@@ -192,7 +192,7 @@ def rcs2wind(sar=-0.3877*ones((1,1)), cmdv=4, windir=0*ones((1,1)), theta=20*one
         # interpolation function
         w[i] = interp1gsy(x=temp,y=wtemp,xi=xi,method2use='l')
     w = reshape(w,sar.shape)
-    print 'CMOD elapsed time: %f', ( time() - currtime )
+    # print 'CMOD elapsed time: %f', ( time() - currtime )
     return w
 
 def rcs2windPar(sar=-0.3877*ones((1,1)), \
@@ -233,7 +233,7 @@ def rcs2windPar(sar=-0.3877*ones((1,1)), \
         out_q.put(w)
 
     # Start timer
-    print "Calculating CMOD..."
+    # print "Calculating CMOD..."
     currtime = time()
     # reshape sar, windir and theta to vector line
     sarR = reshape(sar, sar.size)
@@ -268,7 +268,7 @@ def rcs2windPar(sar=-0.3877*ones((1,1)), \
     for p in procs:
         p.join()
     resultW = reshape(resultW,sar.shape) # reshape back to initial array
-    print 'CMOD elapsed time: %f', ( time() - currtime )
+    # print 'CMOD elapsed time: %f', ( time() - currtime )
     return resultW
 
 

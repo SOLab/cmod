@@ -349,7 +349,7 @@ def rcs2wind(sar=0.9146 * ones((1, 1)), cmdv=4, windir=0 * ones((1, 1)),
     ws = arange(0, maxwind, 1.0)
     #    alpha = 0.6
     # Start timer
-    print "Calculating CMOD..."
+    # print "Calculating CMOD..."
     currtime = time()
 
     sig = zeros((ws.size, sar.shape[0], sar.shape[1]))
@@ -358,14 +358,14 @@ def rcs2wind(sar=0.9146 * ones((1, 1)), cmdv=4, windir=0 * ones((1, 1)),
         for ind in range(ws.size):
             sig[ind, :, :] = cmod4(u=ws[ind], windir=windir, theta=theta)
         # Use linear interpolation to look up the right wind in the sima table.
-        print "Sigma to Wind LUT..."
+        # print "Sigma to Wind LUT..."
         w = interp1gsy(x=sig, y=ws, xi=sar)
     elif cmdv == 5:
         w = cmod5n_inverse(sar, windir, theta, iterations=10)
     else:
         print "Illegal CMOD version specified"
 
-    print 'CMOD elapsed time: %f' % (time() - currtime)
+    # print 'CMOD elapsed time: %f' % (time() - currtime)
     return w
 
 
@@ -422,7 +422,7 @@ def rcs2windPar(sar=0.9146 * ones((1, 1)),
         out_q.put(w)
 
     # Start timer
-    print "Calculating CMOD..."
+    # print "Calculating CMOD..."
     currtime = time()
 
     sarR = reshape(sar, sar.size)
@@ -457,11 +457,11 @@ def rcs2windPar(sar=0.9146 * ones((1, 1)),
     # Wait for all worker processes to finish
     for p in procs:
         p.join()
-    print "Sigma to Wind LUT..."
+    # print "Sigma to Wind LUT..."
     # w = zeros(sar.size)
     resultW = reshape(resultW, sar.shape)
 
-    print 'CMOD elapsed time: %f' % (time() - currtime)
+    # print 'CMOD elapsed time: %f' % (time() - currtime)
     return resultW
 
 
@@ -469,9 +469,9 @@ if __name__ == "__main__":
     wind = rcs2wind(sar=0.9146 * ones((1, 1)), cmdv=4,
                     windir=0 * ones((1, 1)),
                     theta=20 * ones((1, 1)))
-    print "Testing CMOD4 passed, Wind = %f" % wind.mean()
+    # print "Testing CMOD4 passed, Wind = %f" % wind.mean()
     wind = rcs2wind(sar=0.9146 * ones((1, 1)), cmdv=5,
                     windir=0 * ones((1, 1)),
                     theta=20 * ones((1, 1)))
-    print "Testing CMOD5 passed, Wind = %f" % wind.mean()
+    # print "Testing CMOD5 passed, Wind = %f" % wind.mean()
 
