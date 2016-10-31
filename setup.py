@@ -1,18 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from setuptools import setup, find_packages
+from setuptools import setup
 
 setup(
     name="cmod",
     version="0.1",
-    packages=find_packages('cmod'),
-    package_dir={'': 'cmod'},
-    include_package_data=True,
-    zip_safe=False,
-    scripts=['cmod/cmod.py', 'cmod/cmod_gpu.py', 'cmod/cmod_vect.py'],
-
-    # metadata for upload to PyPI
+    packages=['cmod'],
     author="Alexander Myasoedov",
     author_email="mag@rshu.ru",
     description="Calculates Normalized Radar Cross Section using CMOD4/5 model",
