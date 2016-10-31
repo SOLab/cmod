@@ -5,8 +5,9 @@ from setuptools import setup, find_packages
 setup(
     name="cmod",
     version="0.1",
-    packages=find_packages(),
-    scripts=['cmod.py', 'cmod_gpu.py', 'cmod_vect.py'],
+    packages=find_packages('cmod'),
+    include_package_data=True,
+    # scripts=['cmod.py', 'cmod_gpu.py', 'cmod_vect.py'],
 
     # metadata for upload to PyPI
     author="Alexander Myasoedov",
