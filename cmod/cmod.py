@@ -6,6 +6,7 @@ Created on Wed May 16 11:36:00 2012
 @author: mag
 """
 
+from __future__ import print_function
 from numpy import arange, dtype, array, log10, tanh, ceil, \
                   sqrt, cos, pi, round, zeros, ones, reshape
 from time import time
