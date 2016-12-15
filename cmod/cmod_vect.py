@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
 from numpy import arange, dtype, array, log10, tanh, ceil, \
     sqrt, cos, exp, pi, round, zeros, ones, reshape, \
     power, rint, where, int16, isnan, isinf, logical_and, logical_or
@@ -363,7 +364,7 @@ def rcs2wind(sar=0.9146 * ones((1, 1)), cmdv=4, windir=0 * ones((1, 1)),
     elif cmdv == 5:
         w = cmod5n_inverse(sar, windir, theta, iterations=10)
     else:
-        print "Illegal CMOD version specified"
+        print("Illegal CMOD version specified")
 
     # print 'CMOD elapsed time: %f' % (time() - currtime)
     return w
@@ -418,7 +419,7 @@ def rcs2windPar(sar=0.9146 * ones((1, 1)),
         elif cmdv == 5:
             w = cmod5n_inverse(sar, windir, theta, iterations=10)
         else:
-            print "Illegal CMOD version specified"
+            print("Illegal CMOD version specified")
         out_q.put(w)
 
     # Start timer

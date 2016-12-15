@@ -177,7 +177,7 @@ def rcs2wind(sar=-0.3877*ones((1,1)), cmdv=4, windir=0*ones((1,1)), theta=20*one
 #        elif cmdv == 5:
 #            sig[i,:] = cmod5(sarR[i])
         else:
-            print "Illegal CMOD version specified"
+            print("Illegal CMOD version specified")
 
     # Use linear interpolation to look up the right wind in the sima table.
     # Start timer
@@ -218,7 +218,7 @@ def rcs2windPar(sar=-0.3877*ones((1,1)), \
     #        elif cmdv == 5:
     #            sig[i,:] = cmod5(sarR[i])
             else:
-                print "Illegal CMOD version specified"
+                print("Illegal CMOD version specified")
 
         # Use linear interpolation to look up the right wind in the sigma table.
         w = zeros(sar.size)
