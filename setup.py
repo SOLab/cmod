@@ -5,8 +5,8 @@ from setuptools import setup
 
 setup(
     install_requires=[
-    'pyopencl'
-    ]
+        'pyopencl'
+    ],
     name="cmod",
     version="0.1",
     packages=['cmod'],
