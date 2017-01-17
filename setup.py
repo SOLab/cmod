@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# pyopencl removed to support docker 
+# installed manually
+
 from setuptools import setup
 
 setup(
-    install_requires=[
-        'pyopencl'
-    ],
     name="cmod",
     version="0.1",
     packages=['cmod'],
